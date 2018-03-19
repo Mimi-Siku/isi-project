@@ -11,8 +11,10 @@ public class App
 		Wrapper wrap1 = new Wrapper("wrap1", data1);
 		Wrapper wrap2 = new Wrapper("wrap2", data2);
 		
+		wrap1.wrapSource();
+		wrap2.wrapSource();
 		//wrap1.readFile();
-		wrap2.readFile();
+		//wrap2.readFile();
 		
 		//wrap1.createTable(data1);
 		//wrap2.createTable(data2);

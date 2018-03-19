@@ -38,11 +38,11 @@ public class Wrapper
 	}
 	
 	/*
-	 * Read the content of the CSV file
+	 * Read the CSV file and build the SQL requests creating and filling the table containing CSV data 
 	 */
-	public void readFile() throws IOException
+	public void wrapSource() throws IOException
 	{
-		//this.reader = new CSVReader(new FileReader(new File(path)), ',');
+		// Connection to the online CSV file
 		URL url = new URL(webAdress);
 		HttpURLConnection httpCo = (HttpURLConnection) url.openConnection();
 		Map<String, List<String>> crunchifyHeader = httpCo.getHeaderFields();
@@ -62,12 +62,14 @@ public class Wrapper
 		}
 		InputStream inputStream = httpCo.getInputStream();
 		
+		// Reading, building requests and execution
 		if (inputStream != null)
 		{
 			try
 			{
 				this.reader = new CSVReader(new BufferedReader(new InputStreamReader(inputStream, "UTF-8")));
-				createTable("");
+				String request = createTable() + ";" + fillTable();
+				sendRequest(request);
 			}
 			catch (IOException e)
 			{
@@ -80,63 +82,66 @@ public class Wrapper
 		}
 	}
 	
-	public void createTable(String data)
+	/*
+	 * Build the request to create the table 
+	 */
+	private String createTable()
 	{
-		int i;
+		StringBuilder request = new StringBuilder(); 
 		
-		StringBuilder sb = new StringBuilder (); 
-		
-		sb.append("CREATE TABLE "+ tableName +"(");
+		request.append("CREATE TABLE "+ tableName +"(");
 		
 		try
 		{
-			String[] premiereLigne = reader.readNext();
+			String[] firstLine = reader.readNext();
 			
+			int i = 0;
+			while (i < firstLine.length - 1)
+			{
+				request.append(tableName + "_" + firstLine[i] + " TEXT, ");
+				i++;
+			}
+			request.append(tableName + "_" + firstLine[i] + " TEXT)");
 			
-			for (i = 0; i < premiereLigne.length -1 ; i++)
-				sb.append(tableName + "_" + premiereLigne[i] + " TEXT, ");
-			
-			sb.append(tableName + "_" + premiereLigne[i] +" TEXT )");
-			
-			System.out.println(sb);
-			//sendRequest(sb.toString());
+			System.out.println(request);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-		
-//		for( i =1; i<lignes.length;i++){
-//			add(lignes[i], name);
-//		}
-		
+
+		return request.toString();
 	}
 	
-	public void fillTable()
+	/*
+	 * Build the request to fill the table 
+	 */
+	private String fillTable()
 	{
-		String[] datas;
+		StringBuilder request = new StringBuilder("");
+//		String[] datas;
+//		
+//		try
+//		{
+//			int cpt = 0;
+//			while((datas = reader.readNext()) != null)
+//			{
+//				//System.out.println(cpt);
+//				//add2(datas);
+//				cpt++;
+//				
+//			}
+//		}
+//		catch (IOException e)
+//		{
+//			e.printStackTrace();
+//		}
 		
-		try
-		{
-			int cpt = 0;
-			while((datas = reader.readNext()) != null)
-			{
-				System.out.println(cpt);
-				add2(datas);
-				cpt++;
-				
-			}
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		return request.toString();
 	}
 	
 
-	public void add2(String[] data)
+	private void add2(String[] data)
 	{
 		StringBuilder sb = new StringBuilder ();
 		String[] parts = data;
@@ -206,24 +211,24 @@ public class Wrapper
 	}
 	
 	/*
-	 * Exécute la requête SQL spécifié après s'être préalablement connectée à la base de données
+	 * Exécute la requête SQL spécifiée après s'être préalablement connecté à la base de données
 	 */
-	public void sendRequest(String request)
+	private void sendRequest(String request)
 	{
 		try
 		{
-			Class.forName( "com.mysql.jdbc.Driver" );
-			Connection con  = DriverManager.getConnection("jdbc:mysql://dbs-perso.luminy.univmed.fr:3306/b14017497", "b14017497", "LD.ZY4");
+			// ORACLE connection
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Connection con  = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:orcl", "SYSTEM", "Sapristi2");
+
+			// MYSQL connection
+//			Class.forName("com.mysql.jdbc.Driver");
+//			Connection con  = DriverManager.getConnection("jdbc:mysql://dbs-perso.luminy.univmed.fr:3306/b14017497", "b14017497", "LD.ZY4");
 
 			Statement stmt = con.createStatement();
 
 			stmt.execute(request);
-			//step4ï¿½executeï¿½queryï¿½ï¿½
-			//ResultSet rs = stmt.executeQuery(request);
-//			while(rs.next())
-//				System.out.println(rs.getInt(1)+"ï¿½ï¿½"+rs.getString(2)+"ï¿½ï¿½"+rs.getString(3));
 
-			//step5ï¿½closeï¿½theï¿½connectionï¿½objectï¿½ï¿½
 			con.close();
 		}
 		catch(Exception e){System.out.println(e);}
