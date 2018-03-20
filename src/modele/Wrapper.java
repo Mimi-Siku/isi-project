@@ -68,8 +68,14 @@ public class Wrapper
 			try
 			{
 				this.reader = new CSVReader(new BufferedReader(new InputStreamReader(inputStream, "UTF-8")));
-				String request = createTable() + ";" + fillTable();
+				String request = "DROP TABLE " + tableName;
+				//String request = "DROP TABLE " + tableName + ";" ;//+ createTable() + ";" + fillTable();
+				System.out.println(request);
 				sendRequest(request);
+				request = createTable() ;
+				System.out.println(request);
+				sendRequest(request);
+				fillTable();
 			}
 			catch (IOException e)
 			{
@@ -81,7 +87,6 @@ public class Wrapper
 			}
 		}
 	}
-	
 	/*
 	 * Build the request to create the table 
 	 */
@@ -103,7 +108,7 @@ public class Wrapper
 			}
 			request.append(tableName + "_" + firstLine[i] + " TEXT)");
 			
-			System.out.println(request);
+			//System.out.println(request);
 		}
 		catch (IOException e)
 		{
@@ -119,23 +124,23 @@ public class Wrapper
 	private String fillTable()
 	{
 		StringBuilder request = new StringBuilder("");
-//		String[] datas;
-//		
-//		try
-//		{
-//			int cpt = 0;
-//			while((datas = reader.readNext()) != null)
-//			{
-//				//System.out.println(cpt);
-//				//add2(datas);
-//				cpt++;
-//				
-//			}
-//		}
-//		catch (IOException e)
-//		{
-//			e.printStackTrace();
-//		}
+		String[] datas;
+		
+		try
+		{
+			int cpt = 0;
+			while((datas = reader.readNext()) != null)
+			{
+				//System.out.println(cpt);
+				//add2(datas);
+				cpt++;
+				
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 		
 		return request.toString();
 	}
@@ -211,19 +216,19 @@ public class Wrapper
 	}
 	
 	/*
-	 * Exécute la requête SQL spécifiée après s'être préalablement connecté à la base de données
+	 * Exï¿½cute la requï¿½te SQL spï¿½cifiï¿½e aprï¿½s s'ï¿½tre prï¿½alablement connectï¿½ ï¿½ la base de donnï¿½es
 	 */
-	private void sendRequest(String request)
+	public static void sendRequest(String request)
 	{
 		try
 		{
 			// ORACLE connection
-			Class.forName("oracle.jdbc.driver.OracleDriver");
-			Connection con  = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:orcl", "SYSTEM", "Sapristi2");
+			//Class.forName("oracle.jdbc.driver.OracleDriver");
+			//Connection con  = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:orcl", "SYSTEM", "Sapristi2");
 
 			// MYSQL connection
-//			Class.forName("com.mysql.jdbc.Driver");
-//			Connection con  = DriverManager.getConnection("jdbc:mysql://dbs-perso.luminy.univmed.fr:3306/b14017497", "b14017497", "LD.ZY4");
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection con  = DriverManager.getConnection("jdbc:mysql://dbs-perso.luminy.univmed.fr:3306/b14017497", "b14017497", "LD.ZY4");
 
 			Statement stmt = con.createStatement();
 
