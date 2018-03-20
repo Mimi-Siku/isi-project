@@ -40,7 +40,7 @@ public class Wrapper
 	/*
 	 * Read the CSV file and build the SQL requests creating and filling the table containing CSV data 
 	 */
-	public void wrapSource() throws IOException
+	public void wrapSource() throws Exception
 	{
 		// Connection to the online CSV file
 		URL url = new URL(webAdress);
@@ -62,24 +62,41 @@ public class Wrapper
 		}
 		InputStream inputStream = httpCo.getInputStream();
 		
-		// Reading, building requests and execution
+		// Reading, building queries and execution
 		if (inputStream != null)
 		{
 			try
 			{
+				// Read the CSV file
 				this.reader = new CSVReader(new BufferedReader(new InputStreamReader(inputStream, "UTF-8")));
-				String request = "DROP TABLE " + tableName;
-				//String request = "DROP TABLE " + tableName + ";" ;//+ createTable() + ";" + fillTable();
-				System.out.println(request);
-				sendRequest(request);
-				request = createTable() ;
-				System.out.println(request);
-				sendRequest(request);
-				fillTable();
+				
+				// Build queries
+				String dropQuery = "DROP TABLE " + tableName;
+				String createQuery = createTable();
+				//String insertQuery = fillTable();				
+				System.out.println(dropQuery);
+				System.out.println(createQuery);
+				//System.out.println(insertQuery);
+
+				// ORACLE connection
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				Connection connection  = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:orcl", "SYSTEM", "Sapristi2");
+
+				// MYSQL connection
+				//Class.forName("com.mysql.jdbc.Driver");
+				//Connection connection  = DriverManager.getConnection("jdbc:mysql://dbs-perso.luminy.univmed.fr:3306/b14017497", "b14017497", "LD.ZY4");
+
+				// Execute the queries
+				Statement stmt = connection.createStatement();
+				stmt.execute(dropQuery);
+				stmt.execute(createQuery);
+				//stmt.execute(insertQuery);
+
+				connection.close();
 			}
-			catch (IOException e)
+			catch (Exception e)
 			{
-				System.out.println(e.getStackTrace());
+				System.out.println(e);
 			}
 			finally
 			{
@@ -103,16 +120,16 @@ public class Wrapper
 			int i = 0;
 			while (i < firstLine.length - 1)
 			{
-				request.append(tableName + "_" + firstLine[i] + " TEXT, ");
+				//request.append(tableName + "_" + firstLine[i] + " TEXT, ");
+				request.append(tableName + "_" + firstLine[i] + " VARCHAR(1000), ");
 				i++;
 			}
-			request.append(tableName + "_" + firstLine[i] + " TEXT)");
-			
-			//System.out.println(request);
+			//request.append(tableName + "_" + firstLine[i] + " TEXT)");
+			request.append(tableName + "_" + firstLine[i] + " VARCHAR(1000))");
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			System.out.println(e);;
 		}
 
 		return request.toString();
@@ -139,7 +156,7 @@ public class Wrapper
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			System.out.println(e);;
 		}
 		
 		return request.toString();
@@ -213,29 +230,5 @@ public class Wrapper
 		sb.append(")");
 		System.out.println(sb.toString());
 //		sendRequest(sb.toString());
-	}
-	
-	/*
-	 * Ex�cute la requ�te SQL sp�cifi�e apr�s s'�tre pr�alablement connect� � la base de donn�es
-	 */
-	public static void sendRequest(String request)
-	{
-		try
-		{
-			// ORACLE connection
-			//Class.forName("oracle.jdbc.driver.OracleDriver");
-			//Connection con  = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:orcl", "SYSTEM", "Sapristi2");
-
-			// MYSQL connection
-			Class.forName("com.mysql.jdbc.Driver");
-			Connection con  = DriverManager.getConnection("jdbc:mysql://dbs-perso.luminy.univmed.fr:3306/b14017497", "b14017497", "LD.ZY4");
-
-			Statement stmt = con.createStatement();
-
-			stmt.execute(request);
-
-			con.close();
-		}
-		catch(Exception e){System.out.println(e);}
 	}
 }
