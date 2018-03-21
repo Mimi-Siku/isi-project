@@ -67,52 +67,36 @@ public class Wrapper
 		{
 			try
 			{
-				// Read the CSV file
 				this.reader = new CSVReader(new BufferedReader(new InputStreamReader(inputStream, "UTF-8")));
-				
-				// Build queries
-				String dropQuery = "DROP TABLE " + tableName;
-				String createQuery = createTable();
-				//String insertQuery = fillTable();				
-				System.out.println(dropQuery);
-				System.out.println(createQuery);
-				//System.out.println(insertQuery);
-
-				// ORACLE connection
-				Class.forName("oracle.jdbc.driver.OracleDriver");
-				Connection connection  = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:orcl", "SYSTEM", "Sapristi2");
-
-				// MYSQL connection
-				//Class.forName("com.mysql.jdbc.Driver");
-				//Connection connection  = DriverManager.getConnection("jdbc:mysql://dbs-perso.luminy.univmed.fr:3306/b14017497", "b14017497", "LD.ZY4");
-
-				// Execute the queries
-				Statement stmt = connection.createStatement();
-				stmt.execute(dropQuery);
-				stmt.execute(createQuery);
-				//stmt.execute(insertQuery);
-
-				connection.close();
+				App.connectDatabase(App.mysqlDriver, App.mysqlConnectInfo);
+				dropTable();
+				createTable();
+				fillTable();
+				App.disconnectDatabase();
 			}
-			catch (Exception e)
-			{
-				System.out.println(e);
-			}
-			finally
-			{
-				inputStream.close();
-			}
+			catch (Exception e) {e.printStackTrace();}
+			finally	{inputStream.close();}
 		}
 	}
+	
 	/*
-	 * Build the request to create the table 
+	 * Build and execute the query to drop the table
+	 */
+	private String dropTable()
+	{
+		String dropQuery = "DROP TABLE IF EXISTS" + tableName; // works with mysql only
+		//String dropQuery = "DROP TABLE " + tableName;
+		App.executeQuery(dropQuery);
+		return dropQuery;
+	}
+	
+	/*
+	 * Build and execute the query to create the table 
 	 */
 	private String createTable()
 	{
-		StringBuilder request = new StringBuilder(); 
-		
-		request.append("CREATE TABLE "+ tableName +"(");
-		
+		StringBuilder createQuery = new StringBuilder("CREATE TABLE "+ tableName +"("); 
+				
 		try
 		{
 			String[] firstLine = reader.readNext();
@@ -120,115 +104,54 @@ public class Wrapper
 			int i = 0;
 			while (i < firstLine.length - 1)
 			{
-				//request.append(tableName + "_" + firstLine[i] + " TEXT, ");
-				request.append(tableName + "_" + firstLine[i] + " VARCHAR(1000), ");
+				//createQuery.append(tableName + "_" + firstLine[i] + " TEXT, ");
+				createQuery.append(tableName + "_" + firstLine[i] + " VARCHAR(1000), ");
 				i++;
 			}
-			//request.append(tableName + "_" + firstLine[i] + " TEXT)");
-			request.append(tableName + "_" + firstLine[i] + " VARCHAR(1000))");
+			//createQuery.append(tableName + "_" + firstLine[i] + " TEXT)");
+			createQuery.append(tableName + "_" + firstLine[i] + " VARCHAR(1000))");
+			App.executeQuery(createQuery.toString());
 		}
-		catch (IOException e)
-		{
-			System.out.println(e);;
-		}
+		catch (IOException e) {e.printStackTrace();}
 
-		return request.toString();
+		return createQuery.toString();
 	}
 	
 	/*
-	 * Build the request to fill the table 
+	 * Build and execute the queries to fill the table 
 	 */
-	private String fillTable()
+	private void fillTable()
 	{
-		StringBuilder request = new StringBuilder("");
-		String[] datas;
+		String[] tuple;
+		StringBuilder fillQuery;
+		PreparedStatement stmt;
 		
 		try
 		{
-			int cpt = 0;
-			while((datas = reader.readNext()) != null)
+			while((tuple = reader.readNext()) != null)
 			{
-				//System.out.println(cpt);
-				//add2(datas);
-				cpt++;
+				// Preparation of the query with ? instead of the real values
+				fillQuery = new StringBuilder("INSERT INTO " + tableName + " VALUES (");
+				int i = 0;
+				while (i < tuple.length - 1)
+				{
+					fillQuery.append("?, ");
+					i++;
+				}
+				fillQuery.append("?)");
 				
+				// Replacement of the ? with the real values (this avoids problems with values containing ",")
+				stmt = App.connection.prepareStatement(fillQuery.toString());
+				for(i = 0; i < tuple.length; i++)
+				{
+					stmt.setString(i + 1, tuple[i]);
+				}
+				
+				//System.out.println(fillQuery);
+				stmt.execute();
 			}
 		}
-		catch (IOException e)
-		{
-			System.out.println(e);;
-		}
-		
-		return request.toString();
-	}
-	
-
-	private void add2(String[] data)
-	{
-		StringBuilder sb = new StringBuilder ();
-		String[] parts = data;
-		
-		try
-		{
-			Class.forName( "com.mysql.jdbc.Driver" );
-			Connection con  = DriverManager.getConnection("jdbc:mysql://dbs-perso.luminy.univmed.fr:3306/b14017497", "b14017497", "LD.ZY4");
-
-			sb.append("INSERT INTO "+ tableName +" ");
-			sb.append("VALUES (");
-			
-			for(int i = 0; i < parts.length; i++)
-			{
-				sb.append("?");
-				if(i != parts.length -1)	sb.append(",");
-			}
-			
-			sb.append(")");
-		
-			PreparedStatement stmt = con.prepareStatement(sb.toString());
-			
-			for(int i = 0; i < parts.length; i++)
-			{
-				stmt.setString(i + 1, parts[i]);
-			}
-			
-			stmt.execute();
-			con.close();
-			
-		}
-		catch (ClassNotFoundException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (SQLException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-		
-//		sendRequest(sb.toString());
-	}
-	
-	public void add(String data, String name)
-	{
-		StringBuilder sb = new StringBuilder ();
-		String[] parts = data.split(",");
-		
-		sb.append("INSERT INTO "+ name +" ");
-		sb.append("VALUES (");
-		
-		for(int i = 0; i < parts.length; i++)
-		{
-//			sb.append("?");
-		
-			sb.append(parts[i]);
-			if(i != parts.length -1)	sb.append(",");
-		}
-		
-		sb.append(")");
-		System.out.println(sb.toString());
-//		sendRequest(sb.toString());
+		catch (SQLException e) {e.printStackTrace();}
+		catch (IOException e) {e.printStackTrace();}
 	}
 }
