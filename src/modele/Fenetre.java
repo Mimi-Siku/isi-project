@@ -1,6 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -8,6 +9,7 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 
 import javax.naming.event.NamespaceChangeListener;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -28,7 +30,9 @@ public class Fenetre extends JFrame {
 	private JComboBox combo2 = new JComboBox(tab2);
 	private JLabel label2 = new JLabel("Age");
 	
-	
+	// Bouton Requete
+	private JButton bouton = new JButton("Lancer Requete");
+
 	public Fenetre(int nbBouton, String[] names){
 		// Base de la Fenetre 
 		this.setTitle("View");
@@ -61,6 +65,10 @@ public class Fenetre extends JFrame {
 		container.add(top2, BorderLayout.CENTER);
 		this.setContentPane(container);
 		this.setVisible(true); 
+		// Ajouter Bouton Requete
+		JPanel panel = new JPanel();
+		panel.add(bouton);
+		panel.setLayout(new FlowLayout());
 		
 		// Ecoute bouton Ville
 	    combo.addItemListener(new ItemState());
@@ -73,21 +81,49 @@ public class Fenetre extends JFrame {
 	    combo2.addActionListener(new ItemAction());
 	    combo2.setPreferredSize(new Dimension(100, 20));
 	    combo2.setForeground(Color.green);
+	    // Ecoute Bouton Requete
+	    bouton.addActionListener(new ItemAction2());
 	}
-	 //Classe interne implémentant l'interface ItemListener
+	 //Classe interne implï¿½mentant l'interface ItemListener
 	  class ItemState implements ItemListener{
 	    public void itemStateChanged(ItemEvent e) {
-	      System.out.println("événement déclenché sur : " + e.getItem());
-;	      // TODO Envoyer le resultat vers la view?
+	      System.out.println("ï¿½vï¿½nement dï¿½clenchï¿½ sur : " + e.getItem());
+;	      // TODO Envoyer le rÃ©sultat vers la view?
 	    }               
 	  }
 	  class ItemAction implements ActionListener{
-		    public void actionPerformed(ActionEvent e) {
-		      System.out.println("ActionListener : action sur " + combo.getSelectedItem());
-		   // TODO Envoyer le resultat vers la view ivi aussi non?
-		      	Fenetre.this.toString(combo.getSelectedItem());// Envoi ça à la Vue OU stock le et creer un bouton qui ordonne l'envoi
+		 
+		    public void actionPerformed(ActionEvent e ) {
+		    	JComboBox combo =(JComboBox) e.getSource();
+		      System.out.println("ActionListener : action sur " + combo.getSelectedItem()); // Changer combo par le bon bouton qui change
+		   // TODO Envoyer le rÃ©sultat vers la view ici aussi non?
+		      	Fenetre.this.toString(combo.getSelectedItem());// Envoi ï¿½a ï¿½ la Vue OU stock le et creer un bouton qui ordonne l'envoi
 		    } 
 	  }
+	  class ItemAction2 implements ActionListener{
+			 
+		    public void actionPerformed(ActionEvent e ) {
+		    	JButton button =(JButton) e.getSource();
+		      System.out.println("ActionListener : action sur " + button.getActionCommand()); // Changer combo par le bon bouton qui change
+		   // TODO Envoyer le rÃ©sultat vers la view ici aussi non?
+		      	Fenetre.this.toString(button.getActionCommand());// Envoi ï¿½a ï¿½ la Vue OU stock le et creer un bouton qui ordonne l'envoi
+		    } 
+	  }
+	  
+	  /*class ItemAction2 implements ItemListener{
+		  JButton button;// Pour savoir quelle bouton a agit je dois stocker le bouton
+		  Integer requete;	// Boolean pour savoir si c'est le bouton de Requete qui a Ã©tÃ© activÃ©
+		  public ItemAction2(JButton button, int requete){
+			  this.button=button;
+			  this.requete=requete;
+		  }
+		    public void actionPerformed(ActionEvent e ) {
+		      System.out.println("ActionListener : action sur " + combo.getSelectedItem()); // Changer combo par le bon bouton qui change
+		   //Envoyer la vue la quete
+		      	Fenetre.this.toString(combo.getSelectedItem());// Envoi ï¿½a ï¿½ la Vue OU stock le et creer un bouton qui ordonne l'envoi
+		    }
+		  }*/
+	  
 	public void toString(Object objet) {
 		// TODO Auto-generated method stub
 		System.out.println(objet.toString()); 
