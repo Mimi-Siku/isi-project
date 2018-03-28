@@ -18,6 +18,11 @@ public class App
 		String data1 = "https://raw.githubusercontent.com/fivethirtyeight/data/master/murder_2016/murder_2016_prelim.csv";
 		String data2 = "https://raw.githubusercontent.com/fivethirtyeight/data/master/police-deaths/clean_data.csv";
 		String data3 = "https://raw.githubusercontent.com/fivethirtyeight/data/master/murder_2016/murder_2015_final.csv";
+		/* URL 
+		 * https://www.kaggle.com/newamerica/terrorist-activity/data
+		 * https://www.kaggle.com/marshallproject/crime-rates/data
+		 * 
+		 */
 		
 		Wrapper wrap1 = new Wrapper("wrap1", data1);
 		Wrapper wrap2 = new Wrapper("wrap2", data2);
