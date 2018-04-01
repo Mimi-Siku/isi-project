@@ -15,26 +15,33 @@ public class App
 	
 	public static void main(String[] args) throws Throwable
 	{
-		String data1 = "https://raw.githubusercontent.com/fivethirtyeight/data/master/murder_2016/murder_2016_prelim.csv";
-		String data2 = "https://raw.githubusercontent.com/fivethirtyeight/data/master/police-deaths/clean_data.csv";
-		String data3 = "https://raw.githubusercontent.com/fivethirtyeight/data/master/murder_2016/murder_2015_final.csv";
 		/* URL 
 		 * https://www.kaggle.com/newamerica/terrorist-activity/data
+		 * => useless
+		 * https://www.kaggle.com/bmwhitehead2000/terrorism-in-the-united-states-year-by-year/data
+		 * => select united states et entitymatching avec latitude longitude
 		 * https://www.kaggle.com/marshallproject/crime-rates/data
 		 * 
 		 */
 		
-		Wrapper wrap1 = new Wrapper("wrap1", data1);
-		Wrapper wrap2 = new Wrapper("wrap2", data2);
-		Wrapper wrap3 = new Wrapper("wrap3", data3);
+		//String data1 = "https://raw.githubusercontent.com/fivethirtyeight/data/master/murder_2016/murder_2016_prelim.csv";
+		//String data2 = "https://raw.githubusercontent.com/fivethirtyeight/data/master/police-deaths/clean_data.csv";
+		//String data3 = "https://raw.githubusercontent.com/fivethirtyeight/data/master/murder_2016/murder_2015_final.csv";
 		
-		Mediator media1 = new Mediator("view1");
+		String dataTerrorism = "https://www.kaggle.com/bmwhitehead2000/terrorism-in-the-united-states-year-by-year/data";
+		String dataCrimes = "https://www.kaggle.com/marshallproject/crime-rates/data";
+		String wrapName1 = "wrapTerrorism";
+		String wrapName2 = "wrapCrimes";
 		
-		wrap1.wrapSource();
-		wrap2.wrapSource();
-		wrap3.wrapSource();
+		Wrapper wrapTerrorism = new Wrapper(wrapName1, dataTerrorism);
+		Wrapper wrapCrimes = new Wrapper(wrapName2, dataCrimes);
 		
-		media1.Vue1();
+		Mediator media = new Mediator(wrapTerrorism, wrapCrimes);
+		
+		wrapTerrorism.wrapSource();
+		wrapCrimes.wrapSource();
+		
+		media.vue1Builder();
 	}
 	
 	public static void connectDatabase(String driver, String[] connectInfo)

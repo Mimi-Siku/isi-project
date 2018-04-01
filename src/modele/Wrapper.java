@@ -31,6 +31,10 @@ public class Wrapper
 	private String webAdress; // Web adress of the CSV file (= wrapper source)
 	private CSVReader reader; // Reader dedicated to CSV file (useful for some speciific traps)
 	
+	public String getTableName() {
+		return tableName;
+	}
+	
 	public Wrapper(String tableName, String webAdress)
 	{
 		this.tableName = tableName;

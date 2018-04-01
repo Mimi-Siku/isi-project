@@ -5,20 +5,54 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 
 public class Mediator
-{
-	private String viewName;
-	
-	public Mediator(String viewName)
+{	
+	Wrapper wrapperTerrorism;
+	Wrapper wrapperCrimes;
+
+	public Mediator(Wrapper wrapperTerrorism, Wrapper wrapperCrimes)
 	{
-		this.viewName = viewName;
+		this.wrapperCrimes = wrapperCrimes;
+		this.wrapperTerrorism = wrapperTerrorism;
 	}
 	
-	public void Vue1(){
+	
+	public void createViews()
+	{
+		App.connectDatabase(App.mysqlDriver, App.mysqlConnectInfo);
+		// if les vues n'existent pas, les creer
+		
+	}
+	
+	public String vue1Builder()
+	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("CREATE VIEW "+ viewName + " AS ");
-		sb.append("SELECT wrap1.city, wrap3.city, 2014_murders, wrap3.2015_murders, wrap3.2016_murders "
-				+ "FROM wrap1, wrap3 WHERE wrap1.city = wrap3.city");
-		sendQuery(sb.toString());
+		String wrapperName = wrapperCrimes.getTableName();
+		
+		sb.append("CREATE VIEW RatioCrimes ");
+		sb.append("(city, year, nbCrimes, percapitaRatio) AS ");
+		sb.append("SELECT ");
+		sb.append("DISTINCT " + wrapperName + ".report_year AS city, ");
+		sb.append("DISTINCT " + wrapperName + ".agency_jurisdiction AS year ");
+		sb.append(wrapperName + ".violent_crimes");
+		sb.append("");
+		sb.append(wrapperName + ".crimes_percapita");
+		sb.append("FROM " + wrapperName);
+		
+		return sb.toString();
+	}
+	
+	public String vue2Builder()
+	{
+		StringBuilder sb = new StringBuilder();
+		String wrapperName = wrapperCrimes.getTableName();
+		
+		sb.append("CREATE VIEW RatioCrimes ");
+		sb.append("(year, nbCrimes) AS ");
+		sb.append("SELECT " + wrapperName + ".report_year, SUM(" + wrapperName + ".violent_crimes)");
+		sb.append("WHERE " + wrapperName + " ");
+		sb.append("ORDER BY " + wrapperName + ".report_year");
+		
+		return sb.toString();
 	}
 	
 	public void sendQuery(String query)
@@ -32,7 +66,7 @@ public class Mediator
 			stmt.execute(query);
 			
 			App.disconnectDatabase();
-}
+		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
