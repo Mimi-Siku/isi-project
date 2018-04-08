@@ -6,10 +6,10 @@ import java.sql.Statement;
 
 public class Mediator
 {	
-	Wrapper wrapperTerrorism;
-	Wrapper wrapperCrimes;
+	WrapperFromCSV wrapperTerrorism;
+	WrapperFromCSV wrapperCrimes;
 
-	public Mediator(Wrapper wrapperTerrorism, Wrapper wrapperCrimes)
+	public Mediator(WrapperFromCSV wrapperTerrorism, WrapperFromCSV wrapperCrimes)
 	{
 		this.wrapperCrimes = wrapperCrimes;
 		this.wrapperTerrorism = wrapperTerrorism;
@@ -23,7 +23,48 @@ public class Mediator
 		
 	}
 	
-	public String vue1Builder()
+	public void vue1Builder()
+	{
+		StringBuilder sb = new StringBuilder();
+		String wrapperName = wrapperCrimes.getTableName();
+		sendQuery("DROP VIEW IF EXISTS RatioCrimes; ");// Attention ça envoi un message d'erreur si la vue n'existe pas mais ce n'est pas bloquant
+		sb.append("CREATE VIEW RatioCrimes ");
+		sb.append("(city, year, nbCrimes, percapitaRatio) AS ");
+		sb.append("SELECT ");
+		sb.append("DISTINCT " + wrapperName + "_report_year AS city, ");
+		sb.append(wrapperName + "_agency_jurisdiction AS year, ");
+		sb.append(wrapperName + "_violent_crimes, ");
+		sb.append("");
+		sb.append(wrapperName + "_crimes_percapita ");
+		sb.append("FROM " + wrapperName);
+		System.out.println(sb.toString());	// Copié le resultat et verifié la syntaxe dans MYSQL avec l'onglet query
+		
+		sendQuery(sb.toString());
+	}
+	
+	public String vue2Builder(String ville)
+	{
+		String city;
+		if(ville==null)
+			city="";
+		else
+			city=ville;
+		StringBuilder sb = new StringBuilder();
+		String wrapperName = wrapperCrimes.getTableName();
+		sendQuery("DROP VIEW IF EXISTS HomicidesParVille; ");
+		sb.append("CREATE VIEW HomicidesParVille ");
+		sb.append("(year,ville, nbHomicides) AS ");
+		sb.append("SELECT DISTINCT " + wrapperName + "_report_year," + wrapperName + "_agency_jurisdiction, "+ "SUM(" + wrapperName + "_violent_crimes) ");
+		sb.append("FROM " + wrapperName);
+		sb.append(" Where " + wrapperName + "_agency_jurisdiction like \""+  ville+"%\" " );
+		sb.append(" GROUP BY " + wrapperName + "_report_year, " + wrapperName + "_agency_jurisdiction");
+		System.out.println(sb.toString());	// Copié le resultat et verifié la syntaxe dans MYSQL avec l'onglet query
+
+		sendQuery(sb.toString());
+		return sb.toString();
+	}
+	
+	public String vue3Builder()//TODO
 	{
 		StringBuilder sb = new StringBuilder();
 		String wrapperName = wrapperCrimes.getTableName();
@@ -37,20 +78,6 @@ public class Mediator
 		sb.append("");
 		sb.append(wrapperName + ".crimes_percapita");
 		sb.append("FROM " + wrapperName);
-		
-		return sb.toString();
-	}
-	
-	public String vue2Builder()
-	{
-		StringBuilder sb = new StringBuilder();
-		String wrapperName = wrapperCrimes.getTableName();
-		
-		sb.append("CREATE VIEW RatioCrimes ");
-		sb.append("(year, nbCrimes) AS ");
-		sb.append("SELECT " + wrapperName + ".report_year, SUM(" + wrapperName + ".violent_crimes)");
-		sb.append("WHERE " + wrapperName + " ");
-		sb.append("ORDER BY " + wrapperName + ".report_year");
 		
 		return sb.toString();
 	}
